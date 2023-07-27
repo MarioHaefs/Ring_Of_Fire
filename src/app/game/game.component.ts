@@ -27,6 +27,8 @@ export class GameComponent {
     if (!this.pickCardAnimation) {
       this.currentCard = this.game.stack.pop()!;
       this.pickCardAnimation = true;
+      this.game.currentPlayer++;
+      this.game.currentPlayer = this.game.currentPlayer % this.game.players.length;
 
       setTimeout(() => {
         this.game.playedCards.push(this.currentCard);
@@ -45,7 +47,9 @@ export class GameComponent {
     const dialogRef = this.dialog.open(DialogAddPlayerComponent);
 
     dialogRef.afterClosed().subscribe(result => {
-      this.game.players.push(result);
+      if (result && result.length > 0) {
+        this.game.players.push(result);
+      }
     });
   }
 
