@@ -1,7 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { Game } from 'src/models/game';
 import { MatDialog } from '@angular/material/dialog';
 import { DialogAddPlayerComponent } from '../dialog-add-player/dialog-add-player.component';
+import { Firestore } from '@angular/fire/firestore';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-game',
@@ -10,6 +12,7 @@ import { DialogAddPlayerComponent } from '../dialog-add-player/dialog-add-player
 })
 
 export class GameComponent {
+  firestore: Firestore = inject(Firestore);
   pickCardAnimation = false;
   currentCard: string = '';
   game!: Game;
