@@ -5,6 +5,7 @@ import { DialogAddPlayerComponent } from '../dialog-add-player/dialog-add-player
 import { Firestore, collection, collectionData, addDoc, doc, getDoc, getDocs, query, where, limit } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
+import { updateDoc } from "@angular/fire/firestore";
 
 @Component({
   selector: 'app-game',
@@ -19,42 +20,36 @@ export class GameComponent {
   pickCardAnimation = false;
   currentCard: string = '';
   game!: Game;
+  gameId: string;
 
 
   constructor(public dialog: MatDialog, private route: ActivatedRoute) {
     this.newGame();
-  
-    this.route.params.subscribe((params) => {
-      const gameId = params['id'];
-      console.log(gameId);
-  
+
+    this.route.params.subscribe(async (params) => {
+      this.gameId = params['id'];
+
       const gamesCollection = collection(this.firestore, 'games');
-      const gameDoc = doc(gamesCollection, gameId);
-  
-      getDoc(gameDoc)
-        .then((gameSnapshot) => {
-          const currentGame = gameSnapshot.data() as Game;
-  
-          currentGame.currentPlayer = this.game.currentPlayer;
-          currentGame.playedCards = this.game.playedCards;
-          currentGame.players = this.game.players;
-          currentGame.stack = this.game.stack;
-  
-          console.log('Dieses Spiel', currentGame);
-          console.log('Spieler', currentGame.players);
-        })
+      const gameDoc = doc(gamesCollection, params['id']);
+      const gameSnapshot = await getDoc(gameDoc);
+
+
+
+      const currentGame = gameSnapshot.data() as Game;
+
+      this.game.currentPlayer = currentGame.currentPlayer;
+      this.game.playedCards = currentGame.playedCards;
+      this.game.players = currentGame.players;
+      this.game.stack = currentGame.stack;
+
+      console.log('Current Game:', currentGame);
     });
-  
+
     this.games$ = collectionData(collection(this.firestore, 'games'));
     this.games$.subscribe((newGame: any) => {
       this.games = newGame;
     });
-  }
-  
-
-
-  ngOnInit(): void {
-  }
+  };
 
 
   takeCard() {
@@ -63,9 +58,11 @@ export class GameComponent {
       this.pickCardAnimation = true;
       this.game.currentPlayer++;
       this.game.currentPlayer = this.game.currentPlayer % this.game.players.length;
+      this.saveGame();
 
       setTimeout(() => {
         this.game.playedCards.push(this.currentCard);
+        this.saveGame();
         this.pickCardAnimation = false;
       }, 1000)
     }
@@ -74,9 +71,6 @@ export class GameComponent {
 
   newGame() {
     this.game = new Game();
-    console.log('In der Funktion newGame', this.game)
-    // let addNewGameToFirebase = collection(this.firestore, 'games');
-    // addDoc(addNewGameToFirebase, this.game.toJson());
   }
 
 
@@ -86,8 +80,17 @@ export class GameComponent {
     dialogRef.afterClosed().subscribe(result => {
       if (result && result.length > 0) {
         this.game.players.push(result);
+        this.saveGame();
       }
     });
+  }
+
+
+  async saveGame() {
+    const saveGame = collection(this.firestore, 'games');
+    const saveGameDoc = doc(saveGame, this.gameId);
+
+    await updateDoc(saveGameDoc, this.game.toJson());
   }
 
 }
