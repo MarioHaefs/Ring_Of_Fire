@@ -2,10 +2,12 @@ import { Component, inject } from '@angular/core';
 import { Game } from 'src/models/game';
 import { MatDialog } from '@angular/material/dialog';
 import { DialogAddPlayerComponent } from '../dialog-add-player/dialog-add-player.component';
-import { Firestore, collection, collectionData, addDoc, doc, getDoc, getDocs, query, where, limit } from '@angular/fire/firestore';
+import { Firestore, collection, collectionData, addDoc, doc, getDoc, docData } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 import { updateDoc } from "@angular/fire/firestore";
+import { onSnapshot } from "@angular/fire/firestore";
+
 
 @Component({
   selector: 'app-game',
@@ -17,8 +19,6 @@ export class GameComponent {
   firestore: Firestore = inject(Firestore);
   games$: Observable<any[]>;
   games: Array<any>;
-  pickCardAnimation = false;
-  currentCard: string = '';
   game!: Game;
   gameId: string;
 
@@ -26,23 +26,22 @@ export class GameComponent {
   constructor(public dialog: MatDialog, private route: ActivatedRoute) {
     this.newGame();
 
-    this.route.params.subscribe(async (params) => {
+    this.route.params.subscribe((params) => {
       this.gameId = params['id'];
-
+    
       const gamesCollection = collection(this.firestore, 'games');
       const gameDoc = doc(gamesCollection, params['id']);
-      const gameSnapshot = await getDoc(gameDoc);
-
-
-
-      const currentGame = gameSnapshot.data() as Game;
-
-      this.game.currentPlayer = currentGame.currentPlayer;
-      this.game.playedCards = currentGame.playedCards;
-      this.game.players = currentGame.players;
-      this.game.stack = currentGame.stack;
-
-      console.log('Current Game:', currentGame);
+    
+      onSnapshot(gameDoc, (gameSnapshot) => {
+        const currentGame = gameSnapshot.data() as Game;
+    
+        this.game.currentPlayer = currentGame.currentPlayer;
+        this.game.playedCards = currentGame.playedCards;
+        this.game.players = currentGame.players;
+        this.game.stack = currentGame.stack;
+        this.game.pickCardAnimation = currentGame.pickCardAnimation;
+        this.game.currentCard = currentGame.currentCard;
+      });
     });
 
     this.games$ = collectionData(collection(this.firestore, 'games'));
@@ -53,17 +52,17 @@ export class GameComponent {
 
 
   takeCard() {
-    if (!this.pickCardAnimation) {
-      this.currentCard = this.game.stack.pop()!;
-      this.pickCardAnimation = true;
+    if (!this.game.pickCardAnimation) {
+      this.game.currentCard = this.game.stack.pop()!;
+      this.game.pickCardAnimation = true;
       this.game.currentPlayer++;
       this.game.currentPlayer = this.game.currentPlayer % this.game.players.length;
       this.saveGame();
 
       setTimeout(() => {
-        this.game.playedCards.push(this.currentCard);
+        this.game.playedCards.push(this.game.currentCard);
+        this.game.pickCardAnimation = false;
         this.saveGame();
-        this.pickCardAnimation = false;
       }, 1000)
     }
   }
