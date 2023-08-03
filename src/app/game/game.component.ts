@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, Renderer2, ElementRef } from '@angular/core';
 import { Game } from 'src/models/game';
 import { MatDialog } from '@angular/material/dialog';
 import { DialogAddPlayerComponent } from '../dialog-add-player/dialog-add-player.component';
@@ -24,18 +24,18 @@ export class GameComponent {
   currentProfileImageNumber = 1;
 
 
-  constructor(public dialog: MatDialog, private route: ActivatedRoute) {
+  constructor(public dialog: MatDialog, private route: ActivatedRoute, private renderer: Renderer2, private el: ElementRef) {
     this.newGame();
 
     this.route.params.subscribe((params) => {
       this.gameId = params['id'];
-    
+
       const gamesCollection = collection(this.firestore, 'games');
       const gameDoc = doc(gamesCollection, params['id']);
-    
+
       onSnapshot(gameDoc, (gameSnapshot) => {
         const currentGame = gameSnapshot.data() as Game;
-    
+
         this.game.currentPlayer = currentGame.currentPlayer;
         this.game.playedCards = currentGame.playedCards;
         this.game.players = currentGame.players;
@@ -53,18 +53,23 @@ export class GameComponent {
 
 
   takeCard() {
-    if (!this.game.pickCardAnimation) {
-      this.game.currentCard = this.game.stack.pop()!;
-      this.game.pickCardAnimation = true;
-      this.game.currentPlayer++;
-      this.game.currentPlayer = this.game.currentPlayer % this.game.players.length;
-      this.saveGame();
+    if (this.game.players.length < 2) {
+      this.highlightCard();
+    } else {
 
-      setTimeout(() => {
-        this.game.playedCards.push(this.game.currentCard);
-        this.game.pickCardAnimation = false;
+      if (!this.game.pickCardAnimation) {
+        this.game.currentCard = this.game.stack.pop()!;
+        this.game.pickCardAnimation = true;
+        this.game.currentPlayer++;
+        this.game.currentPlayer = this.game.currentPlayer % this.game.players.length;
         this.saveGame();
-      }, 1000)
+
+        setTimeout(() => {
+          this.game.playedCards.push(this.game.currentCard);
+          this.game.pickCardAnimation = false;
+          this.saveGame();
+        }, 1000)
+      }
     }
   }
 
@@ -81,7 +86,7 @@ export class GameComponent {
       if (result && result.length > 0) {
         this.currentProfileImageNumber = this.currentProfileImageNumber % 5 + 1;
         const profileImage = "/assets/img/profil" + this.currentProfileImageNumber + ".png";
-        this.game.players.push({name: result, profileImage: profileImage});
+        this.game.players.push({ name: result, profileImage: profileImage });
         this.saveGame();
       }
     });
@@ -94,5 +99,17 @@ export class GameComponent {
 
     await updateDoc(saveGameDoc, this.game.toJson());
   }
+
+
+  highlightCard() {
+    const card = this.el.nativeElement.querySelector('#highlightable');
+    this.renderer.addClass(card, 'highlight');
+
+
+    setTimeout(() => {
+      this.renderer.removeClass(card, 'highlight');
+    },1500);
+  }
+
 
 }
