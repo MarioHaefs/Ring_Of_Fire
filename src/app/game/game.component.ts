@@ -21,6 +21,7 @@ export class GameComponent {
   games: Array<any>;
   game!: Game;
   gameId: string;
+  currentProfileImageNumber = 1;
 
 
   constructor(public dialog: MatDialog, private route: ActivatedRoute) {
@@ -78,7 +79,9 @@ export class GameComponent {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result && result.length > 0) {
-        this.game.players.push(result);
+        this.currentProfileImageNumber = this.currentProfileImageNumber % 5 + 1;
+        const profileImage = "/assets/img/profil" + this.currentProfileImageNumber + ".png";
+        this.game.players.push({name: result, profileImage: profileImage});
         this.saveGame();
       }
     });
