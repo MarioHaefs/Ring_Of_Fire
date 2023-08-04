@@ -22,6 +22,7 @@ export class GameComponent {
   game!: Game;
   gameId: string;
   currentProfileImageNumber = 1;
+  profileImages: number[] = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
 
   constructor(public dialog: MatDialog, private route: ActivatedRoute, private renderer: Renderer2, private el: ElementRef) {
@@ -81,10 +82,13 @@ export class GameComponent {
 
   openDialog(): void {
     const dialogRef = this.dialog.open(DialogAddPlayerComponent);
-
+  
     dialogRef.afterClosed().subscribe(result => {
       if (result && result.length > 0) {
-        this.currentProfileImageNumber = this.currentProfileImageNumber % 5 + 1;
+        const randomNumber = Math.floor(Math.random() * this.profileImages.length);
+        this.currentProfileImageNumber = this.profileImages[randomNumber];
+        this.profileImages.splice(randomNumber, 1);
+        
         const profileImage = "/assets/img/profil" + this.currentProfileImageNumber + ".png";
         this.game.players.push({ name: result, profileImage: profileImage });
         this.saveGame();
