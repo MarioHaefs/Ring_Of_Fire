@@ -15,6 +15,7 @@ import { onSnapshot } from "@angular/fire/firestore";
   styleUrls: ['./game.component.scss']
 })
 
+
 export class GameComponent {
   firestore: Firestore = inject(Firestore);
   games$: Observable<any[]>;
@@ -28,6 +29,10 @@ export class GameComponent {
   constructor(public dialog: MatDialog, private route: ActivatedRoute, private renderer: Renderer2, private el: ElementRef) {
     this.newGame();
 
+
+    /**
+     * this code block reads the current game state from the firestore database and updates the local "this.game" instance whenever the state in the database changes
+     */
     this.route.params.subscribe((params) => {
       this.gameId = params['id'];
 
@@ -46,6 +51,10 @@ export class GameComponent {
       });
     });
 
+
+    /**
+     * this code block establishes a real-time connection to the 'games' collection in firestore and updates "this.games" every time the data in this collection changes
+     */
     this.games$ = collectionData(collection(this.firestore, 'games'));
     this.games$.subscribe((newGame: any) => {
       this.games = newGame;
@@ -53,6 +62,9 @@ export class GameComponent {
   };
 
 
+  /**
+   * if theyre 2 players registered: pick a card from card stack -> play pickCardAnimaton -> select next currentPlayer -> save game in database
+   */
   takeCard() {
     if (this.game.players.length < 2) {
       this.highlightCard();
@@ -64,31 +76,44 @@ export class GameComponent {
         this.game.currentPlayer++;
         this.game.currentPlayer = this.game.currentPlayer % this.game.players.length;
         this.saveGame();
-
-        setTimeout(() => {
-          this.game.playedCards.push(this.game.currentCard);
-          this.game.pickCardAnimation = false;
-          this.saveGame();
-        }, 1000)
+        this.updatePlayedCards();
       }
     }
   }
 
 
+  /**
+   * timeout for pickCard() animation -> push currentCard in playedCards stack -> save game in database
+   */
+  updatePlayedCards() {
+    setTimeout(() => {
+      this.game.playedCards.push(this.game.currentCard);
+      this.game.pickCardAnimation = false;
+      this.saveGame();
+    }, 1000)
+  }
+
+
+  /**
+   * create a new game instance
+   */
   newGame() {
     this.game = new Game();
   }
 
 
+  /**
+   * open dialog-add-player -> save player name and assigns him a random profile picture -> save game in database
+   */
   openDialog(): void {
     const dialogRef = this.dialog.open(DialogAddPlayerComponent);
-  
+
     dialogRef.afterClosed().subscribe(result => {
       if (result && result.length > 0) {
         const randomNumber = Math.floor(Math.random() * this.profileImages.length);
         this.currentProfileImageNumber = this.profileImages[randomNumber];
         this.profileImages.splice(randomNumber, 1);
-        
+
         const profileImage = "/assets/img/profil" + this.currentProfileImageNumber + ".png";
         this.game.players.push({ name: result, profileImage: profileImage });
         this.saveGame();
@@ -97,6 +122,9 @@ export class GameComponent {
   }
 
 
+  /**
+   * save game in database
+   */
   async saveGame() {
     const saveGame = collection(this.firestore, 'games');
     const saveGameDoc = doc(saveGame, this.gameId);
@@ -105,6 +133,9 @@ export class GameComponent {
   }
 
 
+  /**
+   * highlight the game-info box if there are not at least 2 players registered
+   */
   highlightCard() {
     const card = this.el.nativeElement.querySelector('#highlightable');
     this.renderer.addClass(card, 'highlight');
@@ -112,8 +143,6 @@ export class GameComponent {
 
     setTimeout(() => {
       this.renderer.removeClass(card, 'highlight');
-    },1500);
+    }, 1500);
   }
-
-
 }

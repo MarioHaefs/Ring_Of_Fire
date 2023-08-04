@@ -5,8 +5,13 @@ import { Component, Input, OnChanges } from '@angular/core';
   templateUrl: './game-info.component.html',
   styleUrls: ['./game-info.component.scss']
 })
+
+
 export class GameInfoComponent implements OnChanges {
 
+  /**
+   * game rules for each card
+   */
   cardAction = [
     { title: 'Waterfall', description: 'Everyone has to start drinking at the same time. As soon as player 1 stops drinking, player 2 may stop drinking. Player 3 may stop as soon as player 2 stops drinking, and so on.' },
     { title: 'You', description: 'You decide who drinks.' },
@@ -25,12 +30,12 @@ export class GameInfoComponent implements OnChanges {
 
   title = '';
   description = '';
-
   @Input() card: string;
 
-  ngOnInit(): void { }
 
-
+  /**
+   * show the game rule assigned to the respective card
+   */
   ngOnChanges(): void {
     if (this.card) {
       let cardNumber = +this.card.split('_')[1];
@@ -38,8 +43,5 @@ export class GameInfoComponent implements OnChanges {
       this.description = this.cardAction[cardNumber - 1].description;
     }
   }
-
-
-
 
 }

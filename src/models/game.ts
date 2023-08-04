@@ -7,6 +7,10 @@ export class Game {
     public currentCard: string = '';
 
     constructor() {
+
+        /**
+         * push the cards img into the card stack and afterwards shuffle it
+         */
         for (let i = 1; i < 14; i++) {
             this.stack.push('ace_' + i);
             this.stack.push('clubs_' + i);
@@ -18,6 +22,11 @@ export class Game {
     }
 
 
+    /**
+     * transform data from database into JSON array
+     * 
+     * @returns Array
+     */
     public toJson() {
         return {
             players: this.players.map(player => ({ name: player.name, profileImage: player.profileImage })),
@@ -31,6 +40,10 @@ export class Game {
 }
 
 
+/**
+ * shuffle array (in this case card stack)
+ * @param array 
+ */
 function shuffle(array: any[]) {
     for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
