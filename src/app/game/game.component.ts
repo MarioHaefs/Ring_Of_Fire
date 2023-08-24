@@ -7,6 +7,7 @@ import { Observable } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 import { updateDoc } from "@angular/fire/firestore";
 import { onSnapshot } from "@angular/fire/firestore";
+import { Router } from '@angular/router';
 
 
 @Component({
@@ -24,9 +25,10 @@ export class GameComponent {
   gameId: string;
   currentProfileImageNumber = 1;
   profileImages: number[] = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+  gameOverActive = false;
 
 
-  constructor(public dialog: MatDialog, private route: ActivatedRoute, private renderer: Renderer2, private el: ElementRef) {
+  constructor(public dialog: MatDialog, private route: ActivatedRoute, private renderer: Renderer2, private el: ElementRef, private router: Router) {
     this.newGame();
 
 
@@ -63,13 +65,14 @@ export class GameComponent {
 
 
   /**
-   * if theyre 2 players registered: pick a card from card stack -> play pickCardAnimaton -> select next currentPlayer -> save game in database
+   * if theyre 2 players registered: pick a card from card stack -> play pickCardAnimaton -> select next currentPlayer -> save game in database ->
+   * if there no cards in the stack left -> show game over screen
    */
   takeCard() {
     if (this.game.players.length < 2) {
       this.highlightCard();
     } else {
-
+      
       if (!this.game.pickCardAnimation) {
         this.game.currentCard = this.game.stack.pop()!;
         this.game.pickCardAnimation = true;
@@ -77,6 +80,10 @@ export class GameComponent {
         this.game.currentPlayer = this.game.currentPlayer % this.game.players.length;
         this.saveGame();
         this.updatePlayedCards();
+      }
+
+      if (this.game.stack.length === 0) {
+        this.toggleGameOver();
       }
     }
   }
@@ -144,5 +151,22 @@ export class GameComponent {
     setTimeout(() => {
       this.renderer.removeClass(card, 'highlight');
     }, 1500);
+  }
+
+
+  /**
+   * enable game over screen
+   */
+  toggleGameOver() {
+    this.gameOverActive = !this.gameOverActive;
+  }
+
+
+  /**
+   * close game over screen
+   */
+  closeGameOver() {
+    this.gameOverActive = false;
+    this.router.navigateByUrl('/');
   }
 }
