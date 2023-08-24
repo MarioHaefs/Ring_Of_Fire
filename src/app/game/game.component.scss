@@ -3,6 +3,9 @@
     width: 100vw;
     max-width: 100%;
     background-image: url('/assets/img/board.jpg');
+    background-position: center; 
+    background-repeat: no-repeat;
+    background-size: cover;
     display: flex;
     justify-content: center;
     align-items: center;

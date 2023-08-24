@@ -1,13 +1,4 @@
 {
-  "targets": {
-    "mariohdaringoffire": {
-      "hosting": {
-        "ring_of_fire": [
-          "mariohdaringoffire"
-        ]
-      }
-    }
-  },
   "projects": {
     "default": "mariohdaringoffire"
   }

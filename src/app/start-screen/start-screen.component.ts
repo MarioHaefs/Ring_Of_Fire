@@ -20,7 +20,7 @@ export class StartScreenComponent {
 
 
   /**
-   * creat new game instance and lead to url
+   * create new game instance and lead to url
    */
   async newGame() {
     this.game = new Game();
