@@ -1,11 +1,13 @@
 <div class="start-screen">
-    <img src="assets/img/startscreen.png">
+    <img class="logo" src="assets/img/startscreen.png">
     <div class="start-label-box">
-        <img class="label-img" (click)="newGame()" src="assets/img/label.png">
+        <img (click)="newGame()" src="assets/img/label.png">
     </div>
+    <span class="licenses" (click)="toggleLicensContainer()">Licenses</span>
 </div>
 
-<div class="licens-container">
+<div class="licens-container" [ngClass]="{'active': licensContainerActive}">
+    <img src="assets/img/X.png" class="close-button" (click)="closeLicensContainer()">
     <span>Images from pixabay.com</span>
     <span>Icons from icons8.de</span>
     <span>Card stack back by "jeffshee" from opengameart.org</span>

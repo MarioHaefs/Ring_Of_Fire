@@ -14,6 +14,7 @@ import { Game } from 'src/models/game';
 export class StartScreenComponent {
   firestore: Firestore = inject(Firestore);
   game!: Game;
+  licensContainerActive = false;
 
 
   constructor(private router: Router) { }
@@ -28,6 +29,16 @@ export class StartScreenComponent {
     await addDoc(addNewGameToFirebase, this.game.toJson()).then((gameInfo: any) => {
       this.router.navigateByUrl('/game/' + gameInfo.id);
     })
+  }
+
+
+  toggleLicensContainer() {
+    this.licensContainerActive = !this.licensContainerActive;
+  }
+
+
+  closeLicensContainer() {
+    this.licensContainerActive = false;
   }
 
 }
